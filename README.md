@@ -1,2 +1,4 @@
 # rich-spotify-presence
-Discord Rich Presence for spotify in TypeScript
+Spotify Rich Presence for Discord in TypeScript
+
+## Installation instructions coming soon™
