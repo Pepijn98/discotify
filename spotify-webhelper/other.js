@@ -1,8 +1,12 @@
+var os = require('os');
+if (os.platform() !== 'win32') throw new Error('This module only runs on Windows.');
+
 var request = require('request')
 var qs = require('querystring')
 var util = require('util');
 var path = require('path');
 var child_process = require('child_process');
+var exec = require('child_process').exec;
 
 var wintools;
 var spotifyWebHelperWinProcRegex;
@@ -30,10 +34,10 @@ function getJson(url, params, headers, cb) {
     cb = cb || function () { };
     if (params)
         url += '?' + qs.stringify(params)
-    
+
     headers['User-Agent'] = FAKE_USER_AGENT;
-    
-    request({ 'url': url, 'headers': headers, 'rejectUnauthorized' : false}, function (err, req, body) {
+
+    request({ 'url': url, 'headers': headers, 'rejectUnauthorized': false }, function (err, req, body) {
         if (err) {
             return cb(err);
         }
@@ -53,8 +57,8 @@ function getJson(url, params, headers, cb) {
 var ASCII_LOWER_CASE = "abcdefghijklmnopqrstuvwxyz";
 function generateRandomString(length) {
     var text = "";
-    
-    for( var i=0; i < 10; i++ )
+
+    for (var i = 0; i < 10; i++)
         text += ASCII_LOWER_CASE.charAt(Math.floor(Math.random() * ASCII_LOWER_CASE.length));
 
     return text;
@@ -75,63 +79,104 @@ function getOauthToken(cb) {
 }
 
 function isSpotifyWebHelperRunning(cb) {
-  cb = cb || function () { };
-  if (process.platform != 'win32')  {
-    return cb(null, true);
-  }
-
-  wintools = wintools || require('../wintools/main');
-  wintools.ps(function (err, lst) {
-    if (err) {
-      return cb(err);
+    cb = cb || function () { };
+    if (process.platform != 'win32') {
+        return cb(null, true);
     }
 
-    spotifyWebHelperWinProcRegex = spotifyWebHelperWinProcRegex || new RegExp('spotifywebhelper.exe', 'i');
-
-    for (var k in lst) {
-      if (spotifyWebHelperWinProcRegex.test(lst[k].desc)) {
-        return cb(null, true);
-      }
-      spotifyWebHelperWinProcRegex.lastIndex = 0;
+    wintools = function (callback) {
+        if (!callback) callback = function (err, list) { };
+    
+        exec('wmic process list /format:csv', { maxBuffer: 2000 * 1024 }, function (err, stdout, stderr) {
+            if (err) {
+                callback({ err: err, msg: "unable to enumerate processes" });
+                return;
+            }
+    
+            stdout = stdout.replace(/\r/g, '').split('\n').slice(1);
+            fields = stdout.shift().split(',');
+    
+            var output = {};
+            stdout.forEach(function (line) {
+    
+                var parts = line.split(',');
+                var entry = {};
+                for (var i = 0; i < fields.length; ++i) {
+                    entry[fields[i]] = parts[i];
+                }
+    
+                var e = {
+                    pid: entry.Handle,
+                    desc: entry.Description,
+                    cmd: entry.CommandLine,
+                    prog: entry.ExecutablePath,
+                    workingSet: entry.WorkingSetSize,
+                };
+    
+                // remove some empty stuff
+                if (!e.cmd) delete e.cmd;
+                if (!e.prog) delete e.prog;
+    
+                if (e.pid) {
+                    output[e.pid] = e;
+                }
+            });
+    
+            callback(null, output);
+        });
     };
-    cb(null, false);
-  });
+
+    wintools(function (err, lst) {
+        if (err) {
+            return cb(err);
+        }
+
+        spotifyWebHelperWinProcRegex = spotifyWebHelperWinProcRegex || new RegExp('spotifywebhelper.exe', 'i');
+
+        for (var k in lst) {
+            if (spotifyWebHelperWinProcRegex.test(lst[k].desc)) {
+                return cb(null, true);
+            }
+            spotifyWebHelperWinProcRegex.lastIndex = 0;
+        };
+        cb(null, false);
+    });
 }
 
 function getWindowsSpotifyWebHelperPath() {
-  if (!process.env.USERPROFILE) {
-    return null;
-  }
+    if (!process.env.USERPROFILE) {
+        return null;
+    }
 
-  return path.join(process.env.USERPROFILE, 'AppData\\Roaming\\Spotify\\Data\\SpotifyWebHelper.exe');
+    return path.join(process.env.USERPROFILE, 'AppData\\Roaming\\Spotify\\Data\\SpotifyWebHelper.exe');
 }
 
 function launchSpotifyWebhelperIfNeeded(cb) {
-  cb = cb || function () { };
-  if (process.platform != 'win32') {
-    return cb(null, true);
-  }
-
-  isSpotifyWebHelperRunning(function (err, res) {
-    if (err) {
-      return cb(err);
+    cb = cb || function () { };
+    if (process.platform != 'win32') {
+        return cb(null, true);
     }
 
-    if (res) {
-      return cb(null, res);
-    }
+    isSpotifyWebHelperRunning(function (err, res) {
+        if (err) {
+            return cb(err);
+        }
 
-    var exePath = getWindowsSpotifyWebHelperPath();
+        if (res) {
+            return cb(null, res);
+        }
 
-    if (!exePath) {
-      return cb(new Error('Failed to retreive SpotifyWebHelper exe path'));
-    }
+        var exePath = getWindowsSpotifyWebHelperPath();
 
-    var child = child_process.spawn(exePath, { detached: true, stdio: 'ignore' });
-    child.unref();
+        if (!exePath) {
+            return cb(new Error('Failed to retreive SpotifyWebHelper exe path'));
+        }
 
-    return cb(null, true);
-  });
+        var child = child_process.spawn(exePath, { detached: true, stdio: 'ignore' });
+        child.unref();
+
+        return cb(null, true);
+    });
 
 }
 
@@ -172,57 +217,57 @@ function SpotifyWebHelper(opts) {
         if (self.isInitialized) {
             return cb();
         }
-        
+
         launchSpotifyWebhelperIfNeeded(function (err, res) {
-          if (err) {
-            return cb(err);
-          }
+            if (err) {
+                return cb(err);
+            }
 
-          if (!res) {
-            return cb(new Error('SpotifyWebHelper not running, failed to start it'));
-          }
+            if (!res) {
+                return cb(new Error('SpotifyWebHelper not running, failed to start it'));
+            }
 
-          getOauthToken(function (err, oauthToken) {
-              if (err) {
-                  return cb(err);
-              }
+            getOauthToken(function (err, oauthToken) {
+                if (err) {
+                    return cb(err);
+                }
 
-              self.oauthToken = oauthToken;
+                self.oauthToken = oauthToken;
 
-              getCsrfToken(function (err, csrfToken) {
-                  if (err) {
-                      return cb(err);
-                  }
+                getCsrfToken(function (err, csrfToken) {
+                    if (err) {
+                        return cb(err);
+                    }
 
-                  self.csrfToken = csrfToken;
-                  self.isInitialized = true;
-                  return cb();
-              });
-          });
+                    self.csrfToken = csrfToken;
+                    self.isInitialized = true;
+                    return cb();
+                });
+            });
         });
     }
 
     function spotifyJsonRequest(self, spotifyRelativeUrl, additionalParams, cb) {
-      cb = cb || function () { };
-      additionalParams = additionalParams || {};
+        cb = cb || function () { };
+        additionalParams = additionalParams || {};
 
-      self.init(function (err) {
-        if (err) {
-          return cb(err);
-        }
+        self.init(function (err) {
+            if (err) {
+                return cb(err);
+            }
 
-        params = {
-          'oauth': self.oauthToken,
-          'csrf': self.csrfToken,
-        }
+            params = {
+                'oauth': self.oauthToken,
+                'csrf': self.csrfToken,
+            }
 
-        for (var key in additionalParams) {
-          params[key] = additionalParams[key];
-        }
+            for (var key in additionalParams) {
+                params[key] = additionalParams[key];
+            }
 
-        var url = generateSpotifyUrl(spotifyRelativeUrl);
-        getJson(url, params, ORIGIN_HEADER, cb);
-      });
+            var url = generateSpotifyUrl(spotifyRelativeUrl);
+            getJson(url, params, ORIGIN_HEADER, cb);
+        });
     }
 
     this.getStatus = function (returnAfter, returnOn, cb) {
@@ -241,54 +286,54 @@ function SpotifyWebHelper(opts) {
         returnOn = returnOn || DEFAULT_RETURN_ON;
         returnAfter = returnAfter || DEFAULT_RETURN_AFTER;
 
-        cb = cb || function() {};
+        cb = cb || function () { };
 
         params = {
-          'returnafter': returnAfter,
-          'returnon': returnOn.join(',')
+            'returnafter': returnAfter,
+            'returnon': returnOn.join(',')
         }
 
         spotifyJsonRequest(this, '/remote/status.json', params, cb);
     }
 
     this.pause = function (cb) {
-      cb = cb || function() {};
+        cb = cb || function () { };
 
-      params = {
-        'pause' : true
-      }
+        params = {
+            'pause': true
+        }
 
-      spotifyJsonRequest(this, '/remote/pause.json', params, cb);
+        spotifyJsonRequest(this, '/remote/pause.json', params, cb);
     }
 
     this.unpause = function (cb) {
-      cb = cb || function () { };
+        cb = cb || function () { };
 
-      params = {
-        'pause': false
-      }
+        params = {
+            'pause': false
+        }
 
-      spotifyJsonRequest(this, '/remote/pause.json', params, cb);
+        spotifyJsonRequest(this, '/remote/pause.json', params, cb);
     }
 
     this.play = function (spotifyUri, cb) {
-      cb = cb || function () { };
+        cb = cb || function () { };
 
-      params = {
-        'uri': spotifyUri,
-        'context': spotifyUri
-     }
+        params = {
+            'uri': spotifyUri,
+            'context': spotifyUri
+        }
 
-      spotifyJsonRequest(this, '/remote/play.json', params, cb);
+        spotifyJsonRequest(this, '/remote/play.json', params, cb);
     }
 
-    this.getVersion = function(cb) {
+    this.getVersion = function (cb) {
         var url = generateSpotifyUrl('/service/version.json');
         return getJson(url, { 'service': 'remote' }, ORIGIN_HEADER, cb)
     }
 
-    this.getLocalHostname = function() {
-      return generateRandomLocalHostName();
+    this.getLocalHostname = function () {
+        return generateRandomLocalHostName();
     }
 }
 
