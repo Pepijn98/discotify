@@ -1,5 +1,5 @@
 import * as request from 'request';
-import * as qs from 'querystring';
+import { stringify } from 'querystring';
 
 const DEFAULT_PORT = 4381;
 const DEFAULT_RETURN_ON = ['login', 'logout', 'play', 'pause', 'error', 'ap']
@@ -22,7 +22,7 @@ function getJson(url: string, params?: any, headers?: any, cb?: any) {
   headers = headers || {}
   cb = cb || function () { };
   if (params)
-    url += '?' + qs.stringify(params)
+    url += '?' + stringify(params)
 
   headers['User-Agent'] = FAKE_USER_AGENT;
 

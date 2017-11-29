@@ -1,4 +1,4 @@
-import { request } from 'request';
+import * as request from 'request';
 import { stringify } from 'querystring';
 import { format } from 'util';
 import { join } from 'path';
