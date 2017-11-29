@@ -33,6 +33,8 @@ async function updateRichPresence() {
 		let err: any = e;
 		if (e) return logger.error(err);
 
+		if (!res.track.track_resource) throw new Error("Track data is undefined");
+
 		if (res.track.track_resource.uri === compareURI) return;
 
 		let start = parseInt(new Date().getTime().toString().substr(0, 10));
