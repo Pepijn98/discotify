@@ -3,10 +3,10 @@ import * as logger from 'winston';
 import * as os from 'os';
 
 let nodeSpotifyWebhelper;
-if (os.platform().toString() === "linux") {
-	nodeSpotifyWebhelper = require('./spotify-webhelper/linux');
+if (os.platform().toString() === "win32") {
+	nodeSpotifyWebhelper = require('./spotify-webhelper/windows');
 } else {
-	nodeSpotifyWebhelper = require('./spotify-webhelper/other');
+	nodeSpotifyWebhelper = require('./spotify-webhelper/linux');
 }
 
 logger.configure({
