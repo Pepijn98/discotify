@@ -81,7 +81,7 @@ function isSpotifyWebHelperRunning(cb: any) {
     }
 
     wintools = function (callback: any) {
-        if (!callback) callback = function (err: Error, list: any) { };
+        if (!callback) callback = function (_err: Error, _list: any) { };
     
         exec('wmic process list /format:csv', { maxBuffer: 2000 * 1024 }, function (err, stdout, _stderr) {
             if (err) {
