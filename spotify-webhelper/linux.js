@@ -1,6 +1,5 @@
 const request = require('request');
 const qs = require('querystring');
-const path = require('path');
 const child_process = require('child_process');
 
 const DEFAULT_PORT = 4381;
@@ -68,14 +67,6 @@ function getOauthToken(cb) {
 
     return cb(null, res['t']);
   });
-}
-
-function getWindowsSpotifyWebHelperPath() {
-  if (!process.env.USERPROFILE) {
-    return null;
-  }
-
-  return path.join(process.env.USERPROFILE, 'AppData\\Roaming\\Spotify\\Data\\SpotifyWebHelper.exe');
 }
 
 function SpotifyWebHelper(opts) {
