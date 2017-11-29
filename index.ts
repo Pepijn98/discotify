@@ -33,7 +33,7 @@ async function updateRichPresence() {
 		let err: any = e;
 		if (e) return logger.error(err);
 
-		if (!res.track.track_resource) throw new Error("Track data is undefined");
+		if (!res.track.track_resource) return logger.warn("No track data, make sure spotify is open and is playing a song!")
 
 		if (res.track.track_resource.uri === compareURI) return;
 
