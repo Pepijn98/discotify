@@ -1,9 +1,9 @@
 import * as DiscordRPC from 'discord-rpc';
 import * as logger from 'winston';
-import * as os from 'os';
+import { platform } from 'os';
 
 let nodeSpotifyWebhelper;
-if (os.platform().toString() === "win32") {
+if (platform().toString() === "win32") {
 	nodeSpotifyWebhelper = require('./spotify-webhelper/windows');
 } else {
 	nodeSpotifyWebhelper = require('./spotify-webhelper/linux');
