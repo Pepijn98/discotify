@@ -4,6 +4,9 @@
     "module": "commonjs",
     "allowJs": true,
     "moduleResolution": "node",
-    "lib": ["es6"]
+    "lib": ["es6"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true
   }
 }
