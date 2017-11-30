@@ -27,3 +27,9 @@ else you should delete the existing version and follow the first 3 steps from th
 
 Should look something like this:<br/>
 ![](https://b.catgirlsare.sexy/ZXnQ.png)
+
+### Tested on
+  - Linux Ubuntu 16.04 ✅
+  - Windows 7 ✅
+  
+ *Got it working on an OS not listed above?<br/>Just make an issue and i'll add it.*
