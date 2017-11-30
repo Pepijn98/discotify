@@ -1,5 +1,6 @@
-# rich-spotify-presence `0.1.3`
-Spotify Rich Presence for Discord in TypeScript
+# discotify `0.1.3`
+Spotify Rich Presence for Discord in TypeScript<br/>
+*shows your currently playing song as a fancy rich presence in Discord*
 
 ## Requirements
   - NodeJS: best to get v8 or above. Get the one for your OS [here](https://nodejs.org/en/download/package-manager)
@@ -11,7 +12,7 @@ Spotify Rich Presence for Discord in TypeScript
   - Spotify: [win](https://www.spotify.com/nl/download/windows/), [linux](https://www.spotify.com/nl/download/linux/), [osx](https://www.spotify.com/nl/download/mac/)
 
 ## Setup
-  - `git clone https://github.com/KurozeroPB/rich-spotify-presence.git`
+  - `git clone https://github.com/KurozeroPB/discotify.git`
   - `cd rich-spotify-presence` or w/e you named the folder
   - `npm i`
   - `npm i -g typescript`
