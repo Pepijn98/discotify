@@ -25,11 +25,12 @@ Spotify Rich Presence for Discord in TypeScript<br/>
 If you still have the .git folder just doing `git pull` should work<br/>
 else you should delete the existing version and follow the first 3 steps from the **Setup** and start it like normally.
 
-Should look something like this:<br/>
-![](https://b.catgirlsare.sexy/ZXnQ.png)
-
-### Tested on
+## Tested on
   - Linux Ubuntu 16.04 ✅
   - Windows 7 ✅
   
  *Got it working on an OS not listed above?<br/>Just make an issue and i'll add it.*
+ 
+ ## Result
+ Should look something like this:<br/>
+![](https://b.catgirlsare.sexy/ZXnQ.png)
