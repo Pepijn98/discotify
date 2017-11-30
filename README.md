@@ -20,5 +20,5 @@ Spotify Rich Presence for Discord in TypeScript
   - Start a song
   - Launch the app with `npm start` or `ts-node index.ts`
 
-Should look something like this:
+Should look something like this:<br/>
 ![](https://b.catgirlsare.sexy/ZXnQ.png)
