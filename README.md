@@ -13,7 +13,7 @@ Spotify Rich Presence for Discord in TypeScript<br/>
 
 ## Setup
   - `git clone https://github.com/KurozeroPB/discotify.git`
-  - `cd rich-spotify-presence` or w/e you named the folder
+  - `cd discotify` or w/e you named the folder
   - `npm i`
   - `npm i -g typescript`
   - `npm i -g ts-node`
