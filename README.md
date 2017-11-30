@@ -21,5 +21,9 @@ Spotify Rich Presence for Discord in TypeScript<br/>
   - Start a song
   - Launch the app with `npm start` or `ts-node index.ts`
 
+## Updating
+If you still have the .git folder just doing `git pull` should work<br/>
+else you should delete the existing version and follow the first 3 steps from the **Setup** and start it like normally.
+
 Should look something like this:<br/>
 ![](https://b.catgirlsare.sexy/ZXnQ.png)
