@@ -1,5 +1,5 @@
 {
-  "name": "spotify-discord-rpc",
+  "name": "discotify",
   "version": "0.1.3",
   "description": "Discord Rich Presence for spotify in TypeScript",
   "main": "index.ts",
@@ -7,7 +7,7 @@
     "start": "ts-node index.ts"
   },
   "author": "KurozeroPB <pepijn.vanden.broek@gmail.com>",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "dependencies": {
     "discord-rpc": "3.0.0-beta.3",
     "request": "^2.36.0",
