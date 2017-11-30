@@ -2,10 +2,11 @@ import * as request from 'request';
 import { stringify } from 'querystring';
 
 const DEFAULT_PORT = 4381;
+const DEFAULT_PROTOCOL = 'http';
 const DEFAULT_RETURN_ON = ['login', 'logout', 'play', 'pause', 'error', 'ap']
 const DEFAULT_RETURN_AFTER = 1
 const ORIGIN_HEADER = { 'Origin': 'https://open.spotify.com' }
-const FAKE_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36';
+const FAKE_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36';
 
 function getJson(url: string, params?: any, headers?: any, cb?: any) {
   if (params instanceof Function) {
@@ -24,14 +25,14 @@ function getJson(url: string, params?: any, headers?: any, cb?: any) {
   if (params)
     url += '?' + stringify(params)
 
-  headers['User-Agent'] = FAKE_USER_AGENT;
+  headers['User-Agent'] = FAKE_USERAGENT;
 
   request({ 'url': url, 'headers': headers, 'rejectUnauthorized': false }, function (err: Error, _req: any, body: any) {
     if (err) {
       return cb(err);
     }
 
-    var parsedBody;
+    let parsedBody;
     try {
       parsedBody = JSON.parse(body);
     }
@@ -43,18 +44,12 @@ function getJson(url: string, params?: any, headers?: any, cb?: any) {
   });
 }
 
-var ASCII_LOWER_CASE = "abcdefghijklmnopqrstuvwxyz";
-function generateRandomString() {
-  var text = "";
-
-  for (var i = 0; i < 10; i++)
-    text += ASCII_LOWER_CASE.charAt(Math.floor(Math.random() * ASCII_LOWER_CASE.length));
-
-  return text;
+function generateRandomString(length: number) {
+  return Math.random().toString(36).substr(length);
 }
 
 function generateRandomLocalHostName() {
-  return generateRandomString() + '.spotilocal.com'
+  return generateRandomString(10) + '.spotilocal.com'
 }
 
 function getOauthToken(cb: any) {
@@ -73,14 +68,15 @@ function SpotifyWebHelper(opts: any): void {
   }
 
   opts = opts || {};
-  var localPort = opts.port || DEFAULT_PORT;
+  let localPort = opts.port || DEFAULT_PORT;
+  let localProto = opts.protocol || DEFAULT_PROTOCOL;
 
-  function generateSpotifyUrl(url: any) {
-    return `http://${generateRandomLocalHostName()}:${localPort}${url}`;
+  function generateSpotifyUrl(url: string) {
+    return `${localProto}://${generateRandomLocalHostName()}:${localPort}${url}`;
   }
 
   function getCsrfToken(cb: any) {
-    var url = generateSpotifyUrl('/simplecsrf/token.json');
+    let url = generateSpotifyUrl('/simplecsrf/token.json');
     return getJson(url, null, ORIGIN_HEADER, function (err: Error, res: any) {
       if (err) {
         return cb(err);
@@ -93,20 +89,20 @@ function SpotifyWebHelper(opts: any): void {
   this.isInitialized = false;
 
   this.init = function (cb: any) {
-    var self = this;
+    let self = this;
     cb = cb || function () { };
     if (self.isInitialized) {
       return cb();
     }
 
-    getOauthToken(function (err: Error, oauthToken: any) {
+    getOauthToken(function (err: Error, oauthToken: string) {
       if (err) {
         return cb(err);
       }
 
       self.oauthToken = oauthToken;
 
-      getCsrfToken(function (err: Error, csrfToken: any) {
+      getCsrfToken(function (err: Error, csrfToken: string) {
         if (err) {
           return cb(err);
         }
@@ -132,11 +128,11 @@ function SpotifyWebHelper(opts: any): void {
         'csrf': self.csrfToken,
       }
 
-      for (var key in additionalParams) {
+      for (let key in additionalParams) {
         params[key] = additionalParams[key];
       }
 
-      var url = generateSpotifyUrl(spotifyRelativeUrl);
+      let url = generateSpotifyUrl(spotifyRelativeUrl);
       getJson(url, params, ORIGIN_HEADER, cb);
     });
   }
@@ -159,7 +155,7 @@ function SpotifyWebHelper(opts: any): void {
 
     cb = cb || function () { };
 
-    let params: any = {
+    let params = {
       'returnafter': returnAfter,
       'returnon': returnOn.join(',')
     }
@@ -170,7 +166,7 @@ function SpotifyWebHelper(opts: any): void {
   this.pause = function (cb: any) {
     cb = cb || function () { };
 
-    let params: any = {
+    let params = {
       'pause': true
     }
 
@@ -180,7 +176,7 @@ function SpotifyWebHelper(opts: any): void {
   this.unpause = function (cb: any) {
     cb = cb || function () { };
 
-    let params: any = {
+    let params = {
       'pause': false
     }
 
@@ -190,7 +186,7 @@ function SpotifyWebHelper(opts: any): void {
   this.play = function (spotifyUri: string, cb: any) {
     cb = cb || function () { };
 
-    let params: any = {
+    let params = {
       'uri': spotifyUri,
       'context': spotifyUri
     }
@@ -199,7 +195,7 @@ function SpotifyWebHelper(opts: any): void {
   }
 
   this.getVersion = function (cb: any) {
-    var url = generateSpotifyUrl('/service/version.json');
+    let url = generateSpotifyUrl('/service/version.json');
     return getJson(url, { 'service': 'remote' }, ORIGIN_HEADER, cb)
   }
 

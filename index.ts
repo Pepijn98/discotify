@@ -26,20 +26,31 @@ const largeImageText = 'Spotify';
 
 let compareURI: string;
 
-async function updateRichPresence() {
+function updateRichPresence() {
 	if (!rpc) return;
 
-	spotify.getStatus(async (e: Error, res: any) => {
-		let err: any = e;
-		if (e) return logger.error(err);
-
-		if (!res.track.track_resource) return logger.warn("No track data, make sure spotify is open and is playing a song!")
-
+	spotify.getStatus((err: Error, res: any) => {
+		if (err) return logger.error(err.toString());
 		if (res.track.track_resource.uri === compareURI) return;
+
+		if (!res.track.track_resource) {
+			rpc.setActivity({
+				details: `🎵 Nothing is playing`,
+				startTimestamp: 0,
+				endTimestamp: 0,
+				largeImageKey: largeImageKey,
+				largeImageText: largeImageText,
+				smallImageKey: 'paused',
+				smallImageText: 'Paused',
+				instance: false
+			});
+
+			return logger.warn(`(${new Date().toLocaleTimeString()}) No track data, make sure Spotify is opened and a song is playing!`);
+		}
 
 		let start = parseInt(new Date().getTime().toString().substr(0, 10));
 		let end = start + (res.track.length - res.playing_position);
-		compareURI = await res.track.track_resource.uri;
+		compareURI = res.track.track_resource.uri;
 
 		rpc.setActivity({
 			details: `🎵 Listening to ${res.track.track_resource.name} by ${res.track.artist_resource.name}`,
@@ -47,6 +58,8 @@ async function updateRichPresence() {
 			endTimestamp: end,
 			largeImageKey: largeImageKey,
 			largeImageText: largeImageText,
+			smallImageKey: 'playing',
+			smallImageText: 'Playing',
 			instance: false,
 		});
 
@@ -55,14 +68,12 @@ async function updateRichPresence() {
 };
 
 rpc.on('ready', () => {
-	logger.info(`Starting with clientId ${clientID}`);
-	updateRichPresence()
-		.catch((err: any) => logger.error(err));
+	logger.info(`Connected with ID: ${clientID}`);
+	updateRichPresence();
 	setInterval(() => {
-		updateRichPresence()
-			.catch((err: any) => logger.error(err));
+		updateRichPresence();
 	}, 1500);
 });
 
 rpc.login(clientID)
-	.catch((err: any) => logger.error(err));
+	.catch((err: Error) => logger.error(err.toString()));
