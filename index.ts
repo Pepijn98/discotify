@@ -31,9 +31,8 @@ function updateRichPresence() {
 
 	spotify.getStatus((err: Error, res: any) => {
 		if (err) return logger.error(err.toString());
-		if (res.track.track_resource.uri === compareURI) return;
 
-		if (!res.track.track_resource) {
+		if (!res.track || !res.track.track_resource) {
 			rpc.setActivity({
 				details: `🎵 Nothing is playing`,
 				startTimestamp: 0,
@@ -47,6 +46,8 @@ function updateRichPresence() {
 
 			return logger.warn(`(${new Date().toLocaleTimeString()}) No track data, make sure Spotify is opened and a song is playing!`);
 		}
+
+		if (res.track.track_resource.uri === compareURI) return;
 
 		let start = parseInt(new Date().getTime().toString().substr(0, 10));
 		let end = start + (res.track.length - res.playing_position);
