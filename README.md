@@ -1,4 +1,4 @@
-# discotify `0.2.1`
+# discotify `0.2.2`
 Spotify Rich Presence for Discord in TypeScript<br/>
 *shows your currently playing song as a fancy rich presence in Discord*
 

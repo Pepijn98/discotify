@@ -1,8 +1,12 @@
 {
   "name": "discotify",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Discord Rich Presence for spotify in TypeScript",
-  "homepage": "https://github.com/KurozeroPB/discotify",
+  "homepage": "https://kurozero.xyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KurozeroPB/discotify.git"
+  },
   "main": "index.ts",
   "scripts": { "start": "ts-node index.ts" },
   "author": "KurozeroPB <pepijn.vanden.broek@gmail.com>",
