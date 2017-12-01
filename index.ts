@@ -97,7 +97,7 @@ rpc.on('ready', async () => {
 		const resp = await checkVersion();
 		logger.info(resp);
 	} catch (e) { 
-		return logger.error(e);
+		return logger.error(e.message ? e.message : e);
 	}
 
 	logger.info(`Connected with ID: ${clientID}`);
