@@ -80,7 +80,7 @@ function checkVersion() {
 				return logger.error(`Failed to check for updates: ${res.data}`);
 			} else {
 				let latest = ~~(res.data.version.split('.').join(''));
-				if (latest > version) return logger.error(`A new version of Discotify is avalible\nPlease get the latest version from: https://www.npmjs.com/package/discotify or use npm install -g discotify@latest`);
+				if (latest > version) return logger.error(`A new version of Discotify is avalible\nPlease get the latest version from: https://www.npmjs.com/package/discotify`);
 				return logger.info(`Discotify is up-to-date using v${sVersion}`);
 			}
 		}).catch((err) => {
