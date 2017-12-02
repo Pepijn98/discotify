@@ -1,11 +1,11 @@
-import * as request from 'request';
-import { stringify } from 'querystring';
-import { format } from 'util';
-import { join } from 'path';
-import { spawn, exec } from 'child_process';
+const { format } = require('util');
+const { join } = require('path');
+const  { spawn, exec } = require('child_process');
+const request = require('request');
+const { stringify } = require('querystring');
 
-let wintools: any;
-let spotifyWebHelperWinProcRegex: any;
+let wintools;
+let spotifyWebHelperWinProcRegex;
 
 const DEFAULT_PORT = 4381;
 const DEFAULT_PROTOCOL = 'http';
@@ -14,8 +14,7 @@ const DEFAULT_RETURN_AFTER = 1
 const ORIGIN_HEADER = { 'Origin': 'https://open.spotify.com' }
 const FAKE_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36';
 
-
-function getJson(url: string, params?: any, headers?: any, cb?: any) {
+function getJson(url, params, headers, cb) {
     if (params instanceof Function) {
         cb = params;
         params = null;
@@ -34,7 +33,7 @@ function getJson(url: string, params?: any, headers?: any, cb?: any) {
     
     headers['User-Agent'] = FAKE_USERAGENT;
     
-    request({ 'url': url, 'headers': headers, 'rejectUnauthorized' : false}, function (err: Error, _req: any, body: any) {
+    request({ 'url': url, 'headers': headers, 'rejectUnauthorized' : false}, function (err, _req, body) {
         if (err) {
             return cb(err);
         }
@@ -51,7 +50,7 @@ function getJson(url: string, params?: any, headers?: any, cb?: any) {
     });
 }
 
-function generateRandomString(length: number) {
+function generateRandomString(length) {
     return Math.random().toString(36).substr(length);
 }
 
@@ -59,8 +58,8 @@ function generateRandomLocalHostName() {
     return generateRandomString(10) + '.spotilocal.com'
 }
 
-function getOauthToken(cb: any) {
-    return getJson('http://open.spotify.com/token', function (err: Error, res: any) {
+function getOauthToken(cb) {
+    return getJson('http://open.spotify.com/token', null, null, function (err, res) {
         if (err) {
             return cb(err);
         }
@@ -69,14 +68,14 @@ function getOauthToken(cb: any) {
     });
 }
 
-function isSpotifyWebHelperRunning(cb: any) {
+function isSpotifyWebHelperRunning(cb) {
   cb = cb || function () { };
   if (process.platform != 'win32')  {
     return cb(null, true);
   }
 
-  wintools = function (callback: any) {
-    if (!callback) callback = function (_err: Error, _list: any) { };
+  wintools = function (callback) {
+    if (!callback) callback = function (_err, _list) { };
 
     exec('wmic process list /format:csv', { maxBuffer: 2000 * 1024 }, function (err, stdout, _stderr) {
         if (err) {
@@ -87,11 +86,12 @@ function isSpotifyWebHelperRunning(cb: any) {
         let newStdout = stdout.replace(/\r/g, '').split('\n').slice(1);
         let fields = newStdout.shift().split(',');
 
-        let output: any = {};
+        let output = {};
         newStdout.forEach(function (line) {
 
             let parts = line.split(',');
-            let entry: any = {};
+            let entry;
+            entry = {};
             for (let i = 0; i < fields.length; ++i) {
                 entry[fields[i]] = parts[i];
             }
@@ -116,7 +116,7 @@ function isSpotifyWebHelperRunning(cb: any) {
     });
 };
   
-  wintools(function (err: Error, lst: any) {
+  wintools(function (err, lst) {
     if (err) {
       return cb(err);
     }
@@ -141,13 +141,13 @@ function getWindowsSpotifyWebHelperPath() {
   return join(process.env.USERPROFILE, 'AppData\\Roaming\\Spotify\\Data\\SpotifyWebHelper.exe');
 }
 
-function launchSpotifyWebhelperIfNeeded(cb: any) {
+function launchSpotifyWebhelperIfNeeded(cb) {
   cb = cb || function () { };
   if (process.platform != 'win32') {
     return cb(null, true);
   }
 
-  isSpotifyWebHelperRunning(function (err: Error, res: any) {
+  isSpotifyWebHelperRunning(function (err, res) {
     if (err) {
       return cb(err);
     }
@@ -162,7 +162,7 @@ function launchSpotifyWebhelperIfNeeded(cb: any) {
       return cb(new Error('Failed to retreive SpotifyWebHelper exe path'));
     }
 
-    let fakeArr: string[];
+    let fakeArr = [];
 
     let child = spawn(exePath, fakeArr, { detached: true, stdio: 'ignore' });
     child.unref();
@@ -172,22 +172,22 @@ function launchSpotifyWebhelperIfNeeded(cb: any) {
 
 }
 
-function SpotifyWebHelper(opts: any): void {
+function SpotifyWebHelper(opts) {
     if (!(this instanceof SpotifyWebHelper)) {
-        return new SpotifyWebHelper(opts);
+        return SpotifyWebHelper(opts);
     }
 
     opts = opts || {};
     let localPort = opts.port || DEFAULT_PORT;
     let localProto = opts.protocol || DEFAULT_PROTOCOL;
 
-    function generateSpotifyUrl(url: string) {
+    function generateSpotifyUrl(url) {
         return format("%s://%s:%d%s", localProto, generateRandomLocalHostName(), localPort, url)
     }
 
-    function getCsrfToken(cb: any) {
+    function getCsrfToken(cb) {
         let url = generateSpotifyUrl('/simplecsrf/token.json');
-        return getJson(url, null, ORIGIN_HEADER, function (err: Error, res: any) {
+        return getJson(url, null, ORIGIN_HEADER, function (err, res) {
             if (err) {
                 return cb(err);
             }
@@ -198,14 +198,14 @@ function SpotifyWebHelper(opts: any): void {
 
     this.isInitialized = false;
 
-    this.init = function (cb: any) {
+    this.init = function (cb) {
         let self = this;
         cb = cb || function () { };
         if (self.isInitialized) {
             return cb();
         }
         
-        launchSpotifyWebhelperIfNeeded(function (err: Error, res: any) {
+        launchSpotifyWebhelperIfNeeded(function (err, res) {
           if (err) {
             return cb(err);
           }
@@ -214,14 +214,14 @@ function SpotifyWebHelper(opts: any): void {
             return cb(new Error('SpotifyWebHelper not running, failed to start it'));
           }
 
-          getOauthToken(function (err: Error, oauthToken: string) {
+          getOauthToken(function (err, oauthToken) {
               if (err) {
                   return cb(err);
               }
 
               self.oauthToken = oauthToken;
 
-              getCsrfToken(function (err: Error, csrfToken: string) {
+              getCsrfToken(function (err, csrfToken) {
                   if (err) {
                       return cb(err);
                   }
@@ -234,16 +234,16 @@ function SpotifyWebHelper(opts: any): void {
         });
     }
 
-    function spotifyJsonRequest(self: any, spotifyRelativeUrl: string, additionalParams?: any, cb?: any) {
+    function spotifyJsonRequest(self, spotifyRelativeUrl, additionalParams, cb) {
       cb = cb || function () { };
       additionalParams = additionalParams || {};
 
-      self.init(function (err: Error) {
+      self.init(function (err) {
         if (err) {
           return cb(err);
         }
 
-        let params: any = {
+        let params = {
           'oauth': self.oauthToken,
           'csrf': self.csrfToken,
         }
@@ -257,7 +257,7 @@ function SpotifyWebHelper(opts: any): void {
       });
     }
 
-    this.getStatus = function (returnAfter: any, returnOn: any, cb: any) {
+    this.getStatus = function (returnAfter, returnOn, cb) {
 
         if (returnAfter instanceof Function) {
             cb = returnAfter;
@@ -283,7 +283,7 @@ function SpotifyWebHelper(opts: any): void {
         spotifyJsonRequest(this, '/remote/status.json', params, cb);
     }
 
-    this.pause = function (cb: any) {
+    this.pause = function (cb) {
       cb = cb || function() {};
 
       let params = {
@@ -293,7 +293,7 @@ function SpotifyWebHelper(opts: any): void {
       spotifyJsonRequest(this, '/remote/pause.json', params, cb);
     }
 
-    this.unpause = function (cb: any) {
+    this.unpause = function (cb) {
       cb = cb || function () { };
 
       let params = {
@@ -303,7 +303,7 @@ function SpotifyWebHelper(opts: any): void {
       spotifyJsonRequest(this, '/remote/pause.json', params, cb);
     }
 
-    this.play = function (spotifyUri: string, cb: any) {
+    this.play = function (spotifyUri, cb) {
       cb = cb || function () { };
 
       let params = {
@@ -314,7 +314,7 @@ function SpotifyWebHelper(opts: any): void {
       spotifyJsonRequest(this, '/remote/play.json', params, cb);
     }
 
-    this.getVersion = function(cb: any) {
+    this.getVersion = function(cb) {
         let url = generateSpotifyUrl('/service/version.json');
         return getJson(url, { 'service': 'remote' }, ORIGIN_HEADER, cb)
     }

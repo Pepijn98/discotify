@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es3",
     "module": "commonjs",
     "allowJs": true,
     "moduleResolution": "node",
-    "lib": ["es6"],
+    "lib": ["es5"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false
-  }
+  },
+  "files": [
+    "typings.d.ts"
+  ]
 }
