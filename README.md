@@ -2,6 +2,8 @@
 Spotify Rich Presence for Discord in TypeScript<br/>
 *shows your currently playing song as a fancy rich presence in Discord*
 
+### For the cli go to [discotify/tree/cli](https://github.com/KurozeroPB/discotify/tree/cli)
+
 ## Requirements
   - NodeJS: best to get v8 or above. Get the one for your OS [here](https://nodejs.org/en/download/package-manager)
   - npm: Should automatically be installed with nodejs
