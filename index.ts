@@ -74,7 +74,7 @@ function updateRichPresence() {
 function checkVersion() {
 	let sVersion = require('./package.json').version;
 	let version = ~~(require('./package.json').version.split('.').join(''));
-	axios.get('https://raw.githubusercontent.com/KurozeroPB/discotify/master/package.json')
+	axios.get('https://raw.githubusercontent.com/KurozeroPB/discotify/cli/package.json')
 		.then((res) => {
 			if (res.status !== 200) {
 				return logger.error(`Failed to check for updates: ${res.data}`);
