@@ -1,6 +1,6 @@
 {
   "name": "discotify",
-  "version": "0.2.14",
+  "version": "0.2.16",
   "description": "Discord Rich Presence for spotify in TypeScript",
   "homepage": "https://kurozero.xyz",
   "repository": {

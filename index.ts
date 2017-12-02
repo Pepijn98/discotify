@@ -80,7 +80,7 @@ function checkVersion() {
 				return logger.error(`Failed to check for updates: ${res.data}`);
 			} else {
 				let latest = ~~(res.data.version.split('.').join(''));
-				if (latest > version) return logger.error(`A new version of Discotify is avalible\nPlease get the latest version from: https://github.com/KurozeroPB/discotify`);
+				if (latest > version) return logger.error(`A new version of Discotify is avalible\nPlease get the latest version from: https://www.npmjs.com/package/discotify or use npm install -g discotify@latest`);
 				return logger.info(`Discotify is up-to-date using v${sVersion}`);
 			}
 		}).catch((err) => {
@@ -108,3 +108,12 @@ if (args[0] && args[0].toLocaleLowerCase() === "start") {
 |_______________________________________|
 	`);
 }
+
+process.on('SIGINT', () => {
+	rpc.destroy()
+		.then(() => {
+			setTimeout(() => {
+				process.exit(0);
+			}, 5000);
+		}).catch((err) => logger.error(err.stack ? err.stack : err.toString()));
+});
