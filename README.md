@@ -4,7 +4,7 @@
     <a href="https://discord.gg/Vf4ne5b"><img src="https://discordapp.com/api/guilds/240059867744698368/embed.png" alt="Discord server" /></a>
     <a href="https://www.npmjs.com/package/discotify"><img src="https://img.shields.io/npm/v/discotify.svg?maxAge=3600" alt="NPM version" /></a>
     <a href="https://www.npmjs.com/package/discotify"><img src="https://img.shields.io/npm/dt/discotify.svg?maxAge=3600" alt="NPM downloads" /></a>
-    <a href="https://david-dm.org/KurozeroPB/discotify/cli"><img src="https://img.shields.io/david/KurozeroPB/discotify.svg?maxAge=3600" alt="Dependencies" /></a>
+    <a href="https://david-dm.org/KurozeroPB/discotify"><img src="https://img.shields.io/david/KurozeroPB/discotify.svg?maxAge=3600" alt="Dependencies" /></a>
     <a href="https://www.patreon.com/Kurozero"><img src="https://img.shields.io/badge/donate-patreon-F96854.svg" alt="Patreon" /></a>
   </p>
   <p>
