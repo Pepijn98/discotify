@@ -28,12 +28,12 @@ Install globally with:<br/>
   - Spotify: [win](https://www.spotify.com/nl/download/windows/), [linux](https://www.spotify.com/nl/download/linux/), [osx](https://www.spotify.com/nl/download/mac/)
 
 ## Usage
-1. Make sure Spotify is open
-2. Make sure either Discord-ptb or Discord-canary is open<br/>
+Make sure Spotify is open<br/>
+Make sure either Discord-ptb or Discord-canary is open<br/>
 <br/>
-To start use: `discotify start`
-<br/>
-To stop: `ctrl + c` does the job
+To start use: `discotify --start`<br/>
+To stop: `ctrl + c` does the job<br/>
+Use `discotify --help` for a small help message
 
 ## Tested on
   - Linux Ubuntu 16.04 ✅
