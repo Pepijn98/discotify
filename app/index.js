@@ -41,16 +41,16 @@ function updateRichPresence() {
             compareURI = res.track.track_resource.uri;
             rpc.setActivity({
                 details: `🎵 Song - ${res.track.track_resource.name}`,
-                state: `👤 Artist - ${res.track.artist_resource.name}`,
+                state: `👤 Artist - ${res.track.artist_resource ? res.track.artist_resource.name : ''}`,
                 startTimestamp: start,
                 endTimestamp: end,
                 largeImageKey: 'spotifylarge',
-                largeImageText: `💿 Album - ${res.track.album_resource.name}`,
+                largeImageText: `💿 Album - ${res.track.album_resource ? res.track.album_resource.name : ''}`,
                 smallImageKey: 'playing',
                 smallImageText: 'Playing',
                 instance: false,
             });
-            logger.info(`(${new Date().toLocaleTimeString()}) Updated Song - ${res.track.track_resource.name} by ${res.track.artist_resource.name}`);
+            logger.info(`(${new Date().toLocaleTimeString()}) Updated Song - ${res.track.track_resource.name} by ${res.track.artist_resource ? res.track.artist_resource.name : ''}`);
         }
         else {
             if (compare === true)
@@ -72,24 +72,26 @@ function updateRichPresence() {
     });
 }
 ;
-function checkVersion() {
-    return new Promise((resolve, reject) => {
-        let sVersion = require('../package.json').version;
-        let version = ~~(require('../package.json').version.split('.').join(''));
-        axios_1.default.get('https://raw.githubusercontent.com/KurozeroPB/discotify/master/package.json')
-            .then((res) => {
-            if (res.status !== 200) {
-                return reject(new Error(`Failed to check for updates: ${res.data}`));
+async function checkVersion() {
+    let sVersion = require('../package.json').version;
+    let version = ~~(require('../package.json').version.split('.').join(''));
+    axios_1.default.get('https://raw.githubusercontent.com/KurozeroPB/discotify/cli/package.json')
+        .then((res) => {
+        if (res.status !== 200) {
+            logger.error(`Failed to check for updates: ${res.data}`);
+        }
+        else {
+            let latest = ~~(res.data.version.split('.').join(''));
+            if (latest > version) {
+                logger.error(`A new version of Discotify is avalible\nPlease get the latest version from: https://www.npmjs.com/package/discotify\nOr run npm install -g discotify@${res.data.version}`);
+                kill();
             }
             else {
-                let latest = ~~(res.data.version.split('.').join(''));
-                if (latest > version)
-                    return reject(new Error(`A new version of Discotify is avalible\nPlease get the latest version from: https://www.npmjs.com/package/discotify\nOr run npm install -g discotify@${res.data.version}`));
-                return resolve(`Discotify is up-to-date using v${sVersion}`);
+                logger.info(`Discotify is up-to-date using v${sVersion}`);
             }
-        }).catch((err) => {
-            return reject(new Error(err.stack ? err.stack : err.message ? err.message : err.toString()));
-        });
+        }
+    }).catch((err) => {
+        logger.error(err.stack ? err.stack : err.message ? err.message : err.toString());
     });
 }
 ;
@@ -104,14 +106,13 @@ function kill() {
 }
 ;
 const [, , ...args] = process.argv;
-if (args[0] && args[0].toLowerCase() === "start") {
+if ((args[0]) && (args[0].toLowerCase() === "--start" || args[0].toLowerCase() === "-s")) {
     rpc.on('ready', async () => {
         try {
-            const resp = await checkVersion();
-            logger.info(resp);
+            await checkVersion();
         }
         catch (e) {
-            return logger.error(e.message ? e.message : e);
+            return logger.error(e);
         }
         logger.info(`Connected with ID: ${clientID}`);
         updateRichPresence();
@@ -122,14 +123,42 @@ if (args[0] && args[0].toLowerCase() === "start") {
     rpc.login(clientID)
         .catch((err) => logger.error(err.stack ? err.stack : err.toString()));
 }
-else {
+else if ((args[0]) && (args[0].toLowerCase() === "--help" || args[0].toLowerCase() === "-h")) {
     console.log(`
+  _____  _               _   _  __       
+ |  __ \\(_)             | | (_)/ _|      
+ | |  | |_ ___  ___ ___ | |_ _| |_ _   _ 
+ | |  | | / __|/ __/ _ \\| __| |  _| | | |
+ | |__| | \\__ \\ (_| (_) | |_| | | | |_| |
+ |_____/|_|___/\\___\\___/ \\__|_|_|  \\__, |
+                                    __/ |
+                                   |___/ 
  _______________________________________
 |                                       |
-| discotify start - to start the script |
+| discotify [option]                    |
+| Options:                              |
+| --start/-s        Start the script    |
+| --help/-h         Show this message   |
 |_______________________________________|
 	`);
 }
-process.on('SIGINT', () => {
-    kill();
-});
+else {
+    console.log(`
+  _____  _               _   _  __       
+ |  __ \\(_)             | | (_)/ _|      
+ | |  | |_ ___  ___ ___ | |_ _| |_ _   _ 
+ | |  | | / __|/ __/ _ \\| __| |  _| | | |
+ | |__| | \\__ \\ (_| (_) | |_| | | | |_| |
+ |_____/|_|___/\\___\\___/ \\__|_|_|  \\__, |
+                                    __/ |
+                                   |___/ 
+ _______________________________________
+|                                       |
+| discotify [option]                    |
+| Options:                              |
+| --start/-s        Start the script    |
+| --help/-h         Show this message   |
+|_______________________________________|
+	`);
+}
+process.on('SIGINT', () => kill());
