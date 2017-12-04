@@ -1,15 +1,15 @@
 {
   "name": "discotify",
-  "version": "0.2.20",
+  "version": "0.2.22",
   "description": "Discord Rich Presence for spotify in TypeScript",
   "homepage": "https://kurozero.xyz",
   "repository": {
     "type": "git",
     "url": "https://github.com/KurozeroPB/discotify.git"
   },
-  "main": "index.ts",
+  "main": "./app/index.js",
   "scripts": {
-    "start": "ts-node index.ts"
+    "start": "node ./app/index.js"
   },
   "author": "KurozeroPB <pepijn.vanden.broek@gmail.com>",
   "license": "GPL-3.0",
@@ -27,11 +27,11 @@
     "presence"
   ],
   "bin": {
-    "discotify": "./index.ts"
+    "discotify": "./app/index.js"
   },
   "dependencies": {
     "axios": "^0.17.1",
-    "discord-rpc": "3.0.0-beta.3",
+    "discord-rpc": "github:devsnek/discord-rpc#master",
     "request": "^2.83.0",
     "winston": "^2.4.0"
   },

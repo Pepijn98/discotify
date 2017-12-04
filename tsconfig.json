@@ -1,16 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es3",
+    "target": "es2017",
     "module": "commonjs",
     "allowJs": true,
     "moduleResolution": "node",
-    "lib": ["es5"],
+    "lib": ["es6", "es7", "esnext"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false
-  },
-  "files": [
-    "typings.d.ts"
-  ]
+    "outDir": "./app"
+  }
 }

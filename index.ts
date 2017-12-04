@@ -1,18 +1,22 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env node
 
-const DiscordRPC = require('discord-rpc');
-const logger = require('winston');
-const axios = require('axios');
-const { platform } = require('os');
-const nodeSpotifyWebhelper = require('./spotify-webhelper/spotify');
+import * as DiscordRPC from 'discord-rpc';
+import * as logger from 'winston';
+import axios, { AxiosError, AxiosResponse } from 'axios';
+import { platform } from 'os';
 
-const [, , ...args] = process.argv;
+let nodeSpotifyWebhelper;
+if (platform().toString() === "win32") {
+	nodeSpotifyWebhelper = require('./spotify-webhelper/windows');
+} else {
+	nodeSpotifyWebhelper = require('./spotify-webhelper/linux');
+}
 
 const spotify = new nodeSpotifyWebhelper.SpotifyWebHelper();
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const clientID = '383639700994523137';
-let compareURI;
-let compare;
+let compareURI: string;
+let compare: boolean;
 
 logger.configure({
 	transports: [
@@ -25,7 +29,7 @@ logger.configure({
 function updateRichPresence() {
 	if (!rpc) return;
 
-	spotify.getStatus((err, res) => {
+	spotify.getStatus((err: Error, res: any) => {
 		if (err) return logger.error(err.stack ? err.stack : err.toString());
 		if (!res.track || !res.track.track_resource) return logger.warn(`(${new Date().toLocaleTimeString()}) No track data, make sure Spotify is opened and a song is selected!`);
 
@@ -71,37 +75,46 @@ function updateRichPresence() {
 	});
 };
 
-function checkVersion() {
-	let sVersion = require('./package.json').version;
-	let version = ~~(require('./package.json').version.split('.').join(''));
-	axios.get('https://raw.githubusercontent.com/KurozeroPB/discotify/cli/package.json')
-		.then((res) => {
-			if (res.status !== 200) {
-				return logger.error(`Failed to check for updates: ${res.data}`);
-			} else {
-				let latest = ~~(res.data.version.split('.').join(''));
-				if (latest > version) {
-					logger.error(`A new version of Discotify is avalible\nPlease get the latest version from: https://www.npmjs.com/package/discotify\nOr run npm install -g discotify@${res.data.version}`);
-					return kill();
+function checkVersion(): Promise<any> {
+	return new Promise((resolve, reject) => {
+		let sVersion: string = require('../package.json').version;
+		let version = ~~(require('../package.json').version.split('.').join(''));
+		axios.get('https://raw.githubusercontent.com/KurozeroPB/discotify/master/package.json')
+			.then((res: AxiosResponse) => {
+				if (res.status !== 200) {
+					return reject(new Error(`Failed to check for updates: ${res.data}`));
+				} else {
+					let latest = ~~(res.data.version.split('.').join(''));
+					if (latest > version) return reject(new Error(`A new version of Discotify is avalible\nPlease get the latest version from: https://www.npmjs.com/package/discotify\nOr run npm install -g discotify@${res.data.version}`));
+					return resolve(`Discotify is up-to-date using v${sVersion}`);
 				}
-				return logger.info(`Discotify is up-to-date using v${sVersion}`);
-			}
-		}).catch((err) => {
-			logger.error(err.stack ? err.stack : err.message ? err.message : err.toString());
-			kill();
-		});
+			}).catch((err: AxiosError) => {
+				return reject(new Error(err.stack ? err.stack : err.message ? err.message : err.toString()));
+			});
+	});
 };
 
 function kill() {
 	rpc.destroy()
 		.then(() => {
 			process.exit(0);
+			setTimeout(() => {
+				process.exit(0);
+			}, 5000);
 		}).catch((err) => logger.error(err.stack ? err.stack : err.toString()));
 };
 
-if (args[0] && args[0].toLocaleLowerCase() === "start") {
-	checkVersion();
-	rpc.on('ready', () => {
+const [, , ...args] = process.argv;
+
+if (args[0] && args[0].toLowerCase() === "start") {
+	rpc.on('ready', async () => {
+		try {
+			const resp = await checkVersion();
+			logger.info(resp);
+		} catch (e) {
+			return logger.error(e.message ? e.message : e);
+		}
+
 		logger.info(`Connected with ID: ${clientID}`);
 		updateRichPresence();
 		setInterval(() => {
@@ -110,7 +123,7 @@ if (args[0] && args[0].toLocaleLowerCase() === "start") {
 	});
 
 	rpc.login(clientID)
-		.catch((err) => logger.error(err.stack ? err.stack : err.toString()));
+		.catch((err: Error) => logger.error(err.stack ? err.stack : err.toString()));
 } else {
 	console.log(`
  _______________________________________
