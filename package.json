@@ -1,6 +1,6 @@
 {
   "name": "discotify",
-  "version": "0.2.26",
+  "version": "0.2.27",
   "description": "Discord Rich Presence for spotify in TypeScript",
   "homepage": "https://kurozero.xyz",
   "repository": {
@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
-    "discord-rpc": "github:devsnek/discord-rpc#master",
+    "discord-rpc": "^3.0.0-beta.6",
     "request": "^2.83.0",
     "winston": "^2.4.0"
   },
