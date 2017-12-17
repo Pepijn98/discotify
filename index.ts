@@ -15,8 +15,22 @@ if (platform().toString() === "win32") {
 const spotify = new nodeSpotifyWebhelper.SpotifyWebHelper();
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const clientID = '383639700994523137';
+
 let compareURI: string;
 let compare: boolean;
+let largeImage: string;
+let songNameBool: boolean;
+let songAlbumBool: boolean;
+
+const christmasCheck = [
+	'christmas',
+	'xmas',
+	'santa',
+	'snow',
+	'rudolph',
+	'holiday'
+];
+
 
 logger.configure({
 	transports: [
@@ -26,10 +40,38 @@ logger.configure({
 	]
 });
 
+async function xmasSongCheck(songName: string): Promise<boolean> {
+	let bool: boolean;
+	christmasCheck.forEach((check) => {
+		if (songName.includes(check)) {
+			bool = true;
+		} else if (bool === true) {
+			bool = true;
+		} else {
+			bool = false;
+		}
+	});
+	return bool;
+};
+
+async function xmasAlbumCheck(albumName: string): Promise<boolean> {
+	let bool: boolean;
+	christmasCheck.forEach((check) => {
+		if (albumName.includes(check)) {
+			bool = true;
+		} else if (bool === true) {
+			bool = true;
+		} else {
+			bool = false;
+		}
+	});
+	return bool;
+};
+
 function updateRichPresence() {
 	if (!rpc) return;
 
-	spotify.getStatus((err: Error, res: any) => {
+	spotify.getStatus(async (err: Error, res: any) => {
 		if (err) return logger.error(err.stack ? err.stack : err.toString());
 		if (!res.track || !res.track.track_resource) return logger.warn(`(${new Date().toLocaleTimeString()}) No track data, make sure Spotify is opened and a song is selected!`);
 
@@ -41,13 +83,38 @@ function updateRichPresence() {
 			let end = start + (res.track.length - res.playing_position);
 			compareURI = res.track.track_resource.uri;
 
+			let songName = res.track.track_resource.name;
+			let songArtist = res.track.artist_resource ? res.track.artist_resource.name : '';
+			let songAlbum = res.track.album_resource ? res.track.album_resource.name : '';
+
+			try {
+				songNameBool = await xmasSongCheck(songName.toLowerCase());
+			} catch (error) {
+				logger.error('Oops something went wrong checking for a christmas song: ' + error);
+			}
+
+			if (songNameBool === true) {
+				largeImage = 'spotifylargexmas';
+			} else {
+				try {
+					songAlbumBool = await xmasAlbumCheck(songAlbum.toLowerCase());
+				} catch (error) {
+					logger.error('Oops something went wrong checking for a christmas song: ' + error);
+				}
+				if (songAlbumBool === true) {
+					largeImage = 'spotifylargexmas';
+				} else if ((songAlbumBool === false || !songAlbumBool) && songNameBool === false) {
+					largeImage = 'spotifylarge';
+				}
+			}
+
 			rpc.setActivity({
-				details: `🎵 Song - ${res.track.track_resource.name}`,
-				state: `👤 Artist - ${res.track.artist_resource ? res.track.artist_resource.name : ''}`,
+				details: `🎵 Song - ${songName}`,
+				state: `👤 Artist - ${songArtist}`,
 				startTimestamp: start,
 				endTimestamp: end,
-				largeImageKey: 'spotifylarge',
-				largeImageText: `💿 Album - ${res.track.album_resource ? res.track.album_resource.name : ''}`,
+				largeImageKey: largeImage,
+				largeImageText: `💿 Album - ${songAlbum}`,
 				smallImageKey: 'playing',
 				smallImageText: 'Playing',
 				instance: false,
