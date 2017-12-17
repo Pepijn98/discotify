@@ -151,18 +151,6 @@ async function checkVersion(): Promise<void> {
 				logger.error(`Failed to check for updates: ${res.data}`);
 			} else {
 				let latest = ~~(res.data.version.split('.').join(''));
-
-				let tempString: string;
-				if (latest.toString().length === 3) {
-					tempString = latest.toString() + '0'
-					latest = parseInt(tempString);
-				}
-				let tempString2: string;
-				if (version.toString().length === 3) {
-					tempString = version.toString() + '0'
-					version = parseInt(tempString2);
-				}
-
 				if (latest > version) {
 					logger.error(`A new version of Discotify is avalible\nPlease get the latest version from: https://www.npmjs.com/package/discotify\nOr run npm install -g discotify@${res.data.version}`);
 					kill();
