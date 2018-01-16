@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import * as DiscordRPC from 'discord-rpc';
 import * as logger from 'winston';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { platform } from 'os';
@@ -13,8 +12,9 @@ if (platform().toString() === "win32") {
 }
 
 const spotify = new nodeSpotifyWebhelper.SpotifyWebHelper();
-const rpc = new DiscordRPC.Client({ transport: 'ipc' });
+
 const clientID = '383639700994523137';
+const client = require('discord-rich-presence')(clientID);
 
 let compareURI: string;
 let compare: boolean;
@@ -52,7 +52,7 @@ async function xmasSongCheck(songName: string): Promise<boolean> {
 		}
 	});
 	return bool;
-};
+}
 
 async function xmasAlbumCheck(albumName: string): Promise<boolean> {
 	let bool: boolean;
@@ -66,10 +66,10 @@ async function xmasAlbumCheck(albumName: string): Promise<boolean> {
 		}
 	});
 	return bool;
-};
+}
 
 function updateRichPresence() {
-	if (!rpc) return;
+	if (!client) return;
 
 	spotify.getStatus(async (err: Error, res: any) => {
 		if (err) return logger.error(err.stack ? err.stack : err.toString());
@@ -108,17 +108,17 @@ function updateRichPresence() {
 				}
 			}
 
-			rpc.setActivity({
-				details: `🎵 Song - ${songName}`,
-				state: `👤 Artist - ${songArtist}`,
-				startTimestamp: start,
-				endTimestamp: end,
-				largeImageKey: largeImage,
-				largeImageText: `💿 Album - ${songAlbum}`,
-				smallImageKey: 'playing',
-				smallImageText: 'Playing',
-				instance: false,
-			});
+			client.updatePresence({
+                details: `🎵 Song - ${songName}`,
+                state: `👤 Artist - ${songArtist}`,
+                startTimestamp: start,
+                endTimestamp: end,
+                largeImageKey: largeImage,
+                largeImageText: `💿 Album - ${songAlbum}`,
+                smallImageKey: 'playing',
+                smallImageText: 'Playing',
+                instance: false,
+            });
 
 			logger.info(`(${new Date().toLocaleTimeString()}) Updated Song - ${res.track.track_resource.name} by ${res.track.artist_resource ? res.track.artist_resource.name : ''}`);
 		} else {
@@ -126,16 +126,16 @@ function updateRichPresence() {
 			compare = true;
 			compareURI = '';
 
-			rpc.setActivity({
-				details: `Paused`,
-				startTimestamp: 0,
-				endTimestamp: 0,
-				largeImageKey: 'spotifylarge',
-				largeImageText: '---',
-				smallImageKey: 'paused',
-				smallImageText: 'Paused',
-				instance: false
-			});
+            client.updatePresence({
+                details: `Paused`,
+                startTimestamp: 0,
+                endTimestamp: 0,
+                largeImageKey: 'spotifylarge',
+                largeImageText: '---',
+                smallImageKey: 'paused',
+                smallImageText: 'Paused',
+                instance: false
+            });
 
 			logger.info(`(${new Date().toLocaleTimeString()}) Spotify is paused`);
 		}
@@ -161,37 +161,28 @@ async function checkVersion(): Promise<void> {
 		}).catch((err: AxiosError) => {
 			logger.error(err.stack ? err.stack : err.message ? err.message : err.toString());
 		});
-};
+}
 
 function kill() {
-	rpc.destroy()
-		.then(() => {
 			process.exit(0);
 			setTimeout(() => {
 				process.exit(0);
 			}, 5000);
-		}).catch((err) => logger.error(err.stack ? err.stack : err.toString()));
-};
+}
 
 const [, , ...args] = process.argv;
 
 if ((args[0]) && (args[0].toLowerCase() === "--start" || args[0].toLowerCase() === "-s")) {
-	rpc.on('ready', async () => {
-		try {
-			await checkVersion();
-		} catch (e) {
-			return logger.error(e);
-		}
-
-		logger.info(`Connected with ID: ${clientID}`);
-		updateRichPresence();
-		setInterval(() => {
-			updateRichPresence();
-		}, 1500);
-	});
-
-	rpc.login(clientID)
-		.catch((err: Error) => logger.error(err.stack ? err.stack : err.toString()));
+    (async () => {
+        try {
+            await checkVersion();
+        } catch (e) {
+            return logger.error(e);
+        }
+    })();
+    setInterval(() => {
+        updateRichPresence();
+    }, 1500);
 } else if ((args[0]) && (args[0].toLowerCase() === "--help" || args[0].toLowerCase() === "-h")) {
 	console.log(`
   _____  _               _   _  __       

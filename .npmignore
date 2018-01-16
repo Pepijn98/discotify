@@ -1,5 +1,4 @@
 .gitignore
 node_modules
-LICENSE
 .git
-README.md
+.idea
