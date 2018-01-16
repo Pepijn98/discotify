@@ -1,56 +1,19 @@
 {
-  "_from": "discotify@0.3.21",
-  "_id": "discotify@0.3.21",
-  "_inBundle": false,
-  "_integrity": "sha512-irzkDL7kUnMB/WClF4HJAtoyzmVq2Xd8kXhQ6bmPWTeYg4NMFq1jiURLmH8zugLTs6QTGAuhVrDnze0ugLYdnA==",
-  "_location": "/discotify",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "version",
-    "registry": true,
-    "raw": "discotify@0.3.21",
-    "name": "discotify",
-    "escapedName": "discotify",
-    "rawSpec": "0.3.21",
-    "saveSpec": null,
-    "fetchSpec": "0.3.21"
-  },
-  "_requiredBy": [
-    "#USER"
-  ],
-  "_resolved": "https://registry.npmjs.org/discotify/-/discotify-0.3.21.tgz",
-  "_shasum": "0679103f1d053146116f844bc5eb7fce926893cf",
-  "_spec": "discotify@0.3.21",
-  "_where": "/usr/lib/node_modules",
-  "author": {
-    "name": "KurozeroPB",
-    "email": "pepijn.vanden.broek@gmail.com"
-  },
-  "bin": {
-    "discotify": "./app/index.js"
-  },
-  "bugs": {
-    "url": "https://github.com/KurozeroPB/discotify/issues"
-  },
-  "bundleDependencies": false,
-  "dependencies": {
-    "axios": "^0.17.1",
-    "discord-rich-presence": "0.0.6",
-    "discord-rpc": "^3.0.0-beta.8",
-    "request": "^2.83.0",
-    "winston": "^2.4.0"
-  },
-  "deprecated": false,
+  "name": "discotify",
+  "version": "0.3.22",
   "description": "Discord Rich Presence for spotify in TypeScript",
-  "devDependencies": {
-    "@types/axios": "^0.14.0",
-    "@types/node": "^8.0.53",
-    "@types/request": "^2.0.8",
-    "@types/winston": "^2.3.7",
-    "tslint": "^5.8.0",
-    "typescript": "^2.6.2"
-  },
   "homepage": "https://kurozero.xyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KurozeroPB/discotify.git"
+  },
+  "main": "./app/index.js",
+  "scripts": {
+    "start": "node ./app/index.js"
+  },
+  "author": "KurozeroPB <pepijn.vanden.broek@gmail.com>",
+  "license": "GPL-3.0",
+  "preferGlobal": true,
   "keywords": [
     "discord",
     "rpc",
@@ -63,16 +26,22 @@
     "rich",
     "presence"
   ],
-  "license": "GPL-3.0",
-  "main": "./app/index.js",
-  "name": "discotify",
-  "preferGlobal": true,
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/KurozeroPB/discotify.git"
+  "bin": {
+    "discotify": "./app/index.js"
   },
-  "scripts": {
-    "start": "node ./app/index.js"
+  "dependencies": {
+    "axios": "^0.17.1",
+    "discord-rich-presence": "0.0.6",
+    "discord-rpc": "^3.0.0-beta.8",
+    "request": "^2.83.0",
+    "winston": "^2.4.0"
   },
-  "version": "0.3.21"
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/node": "^8.0.53",
+    "@types/request": "^2.0.8",
+    "@types/winston": "^2.3.7",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.2"
+  }
 }

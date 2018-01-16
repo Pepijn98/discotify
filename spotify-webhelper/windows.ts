@@ -1,17 +1,17 @@
 import * as request from 'request';
-import { stringify } from 'querystring';
-import { format } from 'util';
-import { join } from 'path';
-import { spawn, exec } from 'child_process';
+import {stringify} from 'querystring';
+import {format} from 'util';
+import {join} from 'path';
+import {spawn, exec} from 'child_process';
 
 let wintools: any;
 let spotifyWebHelperWinProcRegex: any;
 
 const DEFAULT_PORT = 4381;
 const DEFAULT_PROTOCOL = 'http';
-const DEFAULT_RETURN_ON = ['login', 'logout', 'play', 'pause', 'error', 'ap']
-const DEFAULT_RETURN_AFTER = 1
-const ORIGIN_HEADER = { 'Origin': 'https://open.spotify.com' }
+const DEFAULT_RETURN_ON = ['login', 'logout', 'play', 'pause', 'error', 'ap'];
+const DEFAULT_RETURN_AFTER = 1;
+const ORIGIN_HEADER = {'Origin': 'https://open.spotify.com'};
 const FAKE_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36';
 
 
@@ -27,14 +27,15 @@ function getJson(url: string, params?: any, headers?: any, cb?: any) {
         headers = null;
     }
 
-    headers = headers || {}
-    cb = cb || function () { };
+    headers = headers || {};
+    cb = cb || function () {
+    };
     if (params)
-        url += '?' + stringify(params)
-    
+        url += '?' + stringify(params);
+
     headers['User-Agent'] = FAKE_USERAGENT;
-    
-    request({ 'url': url, 'headers': headers, 'rejectUnauthorized' : false}, function (err: Error, _req: any, body: any) {
+
+    request({'url': url, 'headers': headers, 'rejectUnauthorized': false}, function (err: Error, _req: any, body: any) {
         if (err) {
             return cb(err);
         }
@@ -70,105 +71,108 @@ function getOauthToken(cb: any) {
 }
 
 function isSpotifyWebHelperRunning(cb: any) {
-  cb = cb || function () { };
-  if (process.platform != 'win32')  {
-    return cb(null, true);
-  }
-
-  wintools = function (callback: any) {
-    if (!callback) callback = function (_err: Error, _list: any) { };
-
-    exec('wmic process list /format:csv', { maxBuffer: 2000 * 1024 }, function (err, stdout, _stderr) {
-        if (err) {
-            callback({ err: err, msg: "unable to enumerate processes" });
-            return;
-        }
-
-        let newStdout = stdout.replace(/\r/g, '').split('\n').slice(1);
-        let fields = newStdout.shift().split(',');
-
-        let output: any = {};
-        newStdout.forEach(function (line) {
-
-            let parts = line.split(',');
-            let entry: any = {};
-            for (let i = 0; i < fields.length; ++i) {
-                entry[fields[i]] = parts[i];
-            }
-
-            let e = {
-                pid: entry.Handle,
-                desc: entry.Description,
-                cmd: entry.CommandLine,
-                prog: entry.ExecutablePath,
-                workingSet: entry.WorkingSetSize,
-            };
-
-            if (!e.cmd) delete e.cmd;
-            if (!e.prog) delete e.prog;
-
-            if (e.pid) {
-                output[e.pid] = e;
-            }
-        });
-
-        callback(null, output);
-    });
-};
-  
-  wintools(function (err: Error, lst: any) {
-    if (err) {
-      return cb(err);
+    cb = cb || function () {
+    };
+    if (process.platform != 'win32') {
+        return cb(null, true);
     }
 
-    spotifyWebHelperWinProcRegex = spotifyWebHelperWinProcRegex || new RegExp('spotifywebhelper.exe', 'i');
+    wintools = function (callback: any) {
+        if (!callback) callback = function () {
+        };
 
-    for (let k in lst) {
-      if (spotifyWebHelperWinProcRegex.test(lst[k].desc)) {
-        return cb(null, true);
-      }
-      spotifyWebHelperWinProcRegex.lastIndex = 0;
+        exec('wmic process list /format:csv', {maxBuffer: 2000 * 1024}, function (err, stdout) {
+            if (err) {
+                callback({err: err, msg: "unable to enumerate processes"});
+                return;
+            }
+
+            let newStdout = stdout.replace(/\r/g, '').split('\n').slice(1);
+            let fields = newStdout.shift().split(',');
+
+            let output: any = {};
+            newStdout.forEach(function (line) {
+
+                let parts = line.split(',');
+                let entry: any = {};
+                for (let i = 0; i < fields.length; ++i) {
+                    entry[fields[i]] = parts[i];
+                }
+
+                let e = {
+                    pid: entry.Handle,
+                    desc: entry.Description,
+                    cmd: entry.CommandLine,
+                    prog: entry.ExecutablePath,
+                    workingSet: entry.WorkingSetSize,
+                };
+
+                if (!e.cmd) delete e.cmd;
+                if (!e.prog) delete e.prog;
+
+                if (e.pid) {
+                    output[e.pid] = e;
+                }
+            });
+
+            callback(null, output);
+        });
     };
-    cb(null, false);
-  });
+
+    wintools(function (err: Error, lst: any) {
+        if (err) {
+            return cb(err);
+        }
+
+        spotifyWebHelperWinProcRegex = spotifyWebHelperWinProcRegex || new RegExp('spotifywebhelper.exe', 'i');
+
+        for (let k in lst) {
+            if (spotifyWebHelperWinProcRegex.test(lst[k].desc)) {
+                return cb(null, true);
+            }
+            spotifyWebHelperWinProcRegex.lastIndex = 0;
+        }
+        cb(null, false);
+    });
 }
 
 function getWindowsSpotifyWebHelperPath() {
-  if (!process.env.USERPROFILE) {
-    return null;
-  }
+    if (!process.env.USERPROFILE) {
+        return null;
+    }
 
-  return join(process.env.USERPROFILE, 'AppData\\Roaming\\Spotify\\Data\\SpotifyWebHelper.exe');
+    return join(process.env.USERPROFILE, 'AppData\\Roaming\\Spotify\\Data\\SpotifyWebHelper.exe');
 }
 
 function launchSpotifyWebhelperIfNeeded(cb: any) {
-  cb = cb || function () { };
-  if (process.platform != 'win32') {
-    return cb(null, true);
-  }
-
-  isSpotifyWebHelperRunning(function (err: Error, res: any) {
-    if (err) {
-      return cb(err);
+    cb = cb || function () {
+    };
+    if (process.platform != 'win32') {
+        return cb(null, true);
     }
 
-    if (res) {
-      return cb(null, res);
-    }
+    isSpotifyWebHelperRunning(function (err: Error, res: any) {
+        if (err) {
+            return cb(err);
+        }
 
-    let exePath = getWindowsSpotifyWebHelperPath();
+        if (res) {
+            return cb(null, res);
+        }
 
-    if (!exePath) {
-      return cb(new Error('Failed to retreive SpotifyWebHelper exe path'));
-    }
+        let exePath = getWindowsSpotifyWebHelperPath();
 
-    let fakeArr: string[];
+        if (!exePath) {
+            return cb(new Error('Failed to retreive SpotifyWebHelper exe path'));
+        }
 
-    let child = spawn(exePath, fakeArr, { detached: true, stdio: 'ignore' });
-    child.unref();
+        let fakeArr: string[] = [];
 
-    return cb(null, true);
-  });
+        let child = spawn(exePath, fakeArr, {detached: true, stdio: 'ignore'});
+        child.unref();
+
+        return cb(null, true);
+    });
 
 }
 
@@ -200,61 +204,63 @@ function SpotifyWebHelper(opts: any): void {
 
     this.init = function (cb: any) {
         let self = this;
-        cb = cb || function () { };
+        cb = cb || function () {
+        };
         if (self.isInitialized) {
             return cb();
         }
-        
+
         launchSpotifyWebhelperIfNeeded(function (err: Error, res: any) {
-          if (err) {
-            return cb(err);
-          }
+            if (err) {
+                return cb(err);
+            }
 
-          if (!res) {
-            return cb(new Error('SpotifyWebHelper not running, failed to start it'));
-          }
+            if (!res) {
+                return cb(new Error('SpotifyWebHelper not running, failed to start it'));
+            }
 
-          getOauthToken(function (err: Error, oauthToken: string) {
-              if (err) {
-                  return cb(err);
-              }
+            getOauthToken(function (err: Error, oauthToken: string) {
+                if (err) {
+                    return cb(err);
+                }
 
-              self.oauthToken = oauthToken;
+                self.oauthToken = oauthToken;
 
-              getCsrfToken(function (err: Error, csrfToken: string) {
-                  if (err) {
-                      return cb(err);
-                  }
+                getCsrfToken(function (err: Error, csrfToken: string) {
+                    if (err) {
+                        return cb(err);
+                    }
 
-                  self.csrfToken = csrfToken;
-                  self.isInitialized = true;
-                  return cb();
-              });
-          });
+                    self.csrfToken = csrfToken;
+                    self.isInitialized = true;
+                    return cb();
+                });
+            });
         });
-    }
+    };
 
     function spotifyJsonRequest(self: any, spotifyRelativeUrl: string, additionalParams?: any, cb?: any) {
-      cb = cb || function () { };
-      additionalParams = additionalParams || {};
+        cb = cb || function () {
+        };
+        additionalParams = additionalParams || {};
 
-      self.init(function (err: Error) {
-        if (err) {
-          return cb(err);
-        }
+        self.init(function (err: Error) {
+            if (err) {
+                return cb(err);
+            }
 
-        let params: any = {
-          'oauth': self.oauthToken,
-          'csrf': self.csrfToken,
-        }
+            let params: any = {
+                'oauth': self.oauthToken,
+                'csrf': self.csrfToken,
+            };
 
-        for (let key in additionalParams) {
-          params[key] = additionalParams[key];
-        }
+            for (let key in additionalParams) {
+                params[key] = additionalParams[key];
+            }
 
-        let url = generateSpotifyUrl(spotifyRelativeUrl);
-        getJson(url, params, ORIGIN_HEADER, cb);
-      });
+            let url = generateSpotifyUrl(spotifyRelativeUrl);
+            getJson(url, params, ORIGIN_HEADER, cb);
+        });
     }
 
     this.getStatus = function (returnAfter: any, returnOn: any, cb: any) {
@@ -273,54 +279,58 @@ function SpotifyWebHelper(opts: any): void {
         returnOn = returnOn || DEFAULT_RETURN_ON;
         returnAfter = returnAfter || DEFAULT_RETURN_AFTER;
 
-        cb = cb || function() {};
+        cb = cb || function () {
+        };
 
         let params = {
-          'returnafter': returnAfter,
-          'returnon': returnOn.join(',')
-        }
+            'returnafter': returnAfter,
+            'returnon': returnOn.join(',')
+        };
 
         spotifyJsonRequest(this, '/remote/status.json', params, cb);
-    }
+    };
 
     this.pause = function (cb: any) {
-      cb = cb || function() {};
+        cb = cb || function () {
+        };
 
-      let params = {
-        'pause' : true
-      }
+        let params = {
+            'pause': true
+        };
 
-      spotifyJsonRequest(this, '/remote/pause.json', params, cb);
-    }
+        spotifyJsonRequest(this, '/remote/pause.json', params, cb);
+    };
 
     this.unpause = function (cb: any) {
-      cb = cb || function () { };
+        cb = cb || function () {
+        };
 
-      let params = {
-        'pause': false
-      }
+        let params = {
+            'pause': false
+        };
 
-      spotifyJsonRequest(this, '/remote/pause.json', params, cb);
-    }
+        spotifyJsonRequest(this, '/remote/pause.json', params, cb);
+    };
 
     this.play = function (spotifyUri: string, cb: any) {
-      cb = cb || function () { };
+        cb = cb || function () {
+        };
 
-      let params = {
-        'uri': spotifyUri,
-        'context': spotifyUri
-     }
+        let params = {
+            'uri': spotifyUri,
+            'context': spotifyUri
+        };
 
-      spotifyJsonRequest(this, '/remote/play.json', params, cb);
-    }
+        spotifyJsonRequest(this, '/remote/play.json', params, cb);
+    };
 
-    this.getVersion = function(cb: any) {
+    this.getVersion = function (cb: any) {
         let url = generateSpotifyUrl('/service/version.json');
-        return getJson(url, { 'service': 'remote' }, ORIGIN_HEADER, cb)
-    }
+        return getJson(url, {'service': 'remote'}, ORIGIN_HEADER, cb)
+    };
 
-    this.getLocalHostname = function() {
-      return generateRandomLocalHostName();
+    this.getLocalHostname = function () {
+        return generateRandomLocalHostName();
     }
 }
 
