@@ -39,6 +39,7 @@ Use `discotify --help` for a small help message
 ## Tested on
   - Linux Ubuntu 16.04 ✅
   - Windows 7 ✅
+  - Windows 10 ✅
   
  *Got it working on an OS not listed above?<br/>Just make an issue and i'll add it.*
  <br/><br/>
