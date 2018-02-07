@@ -22,6 +22,7 @@ Install globally with:<br/>
 ## Requirements
   - NodeJS: best to get v8 or above. Get the one for your OS [here](https://nodejs.org/en/download/package-manager)
   - npm: Should automatically be installed with nodejs
+  - git: Get it from [here](https://git-scm.com/downloads)
   - Discord-ptb or canary:
     - ptb you can get from [here](https://discordapp.com/download) by clicking on "Get the Public Test Build"
     - Canary links: [win](https://discordapp.com/api/download/canary?platform=win), [linux](https://discordapp.com/api/download/canary?platform=linux), [osx](https://discordapp.com/api/download/canary?platform=osx)
