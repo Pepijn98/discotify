@@ -1,0 +1,2 @@
+*.ts linguist-language=TypeScript
+index.ts linguist-language=TypeScript
