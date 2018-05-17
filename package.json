@@ -1,6 +1,6 @@
 {
   "name": "discotify",
-  "version": "0.3.22",
+  "version": "0.4.0",
   "description": "Discord Rich Presence for spotify in TypeScript",
   "homepage": "https://kurozero.xyz",
   "repository": {
@@ -9,9 +9,11 @@
   },
   "main": "./app/index.js",
   "scripts": {
-    "start": "node ./app/index.js"
+    "start": "node ./app/index.js",
+    "build": "tsc",
+    "test": "ts-node index.ts"
   },
-  "author": "KurozeroPB <pepijn.vanden.broek@gmail.com>",
+  "author": "KurozeroPB <root@kurozero.xyz>",
   "license": "GPL-3.0",
   "preferGlobal": true,
   "keywords": [
@@ -30,18 +32,16 @@
     "discotify": "./app/index.js"
   },
   "dependencies": {
-    "axios": "^0.17.1",
-    "discord-rich-presence": "0.0.6",
-    "discord-rpc": "^3.0.0-beta.8",
-    "request": "^2.83.0",
-    "winston": "^2.4.0"
+    "compare-versions": "^3.2.1",
+    "discord-rpc": "^3.0.0-beta.10",
+    "request": "^2.86.0",
+    "winston": "^2.4.2"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.0",
-    "@types/node": "^8.0.53",
-    "@types/request": "^2.0.8",
-    "@types/winston": "^2.3.7",
-    "tslint": "^5.8.0",
-    "typescript": "^2.6.2"
+    "@types/node": "^10.1.0",
+    "@types/request": "^2.47.0",
+    "@types/winston": "^2.3.9",
+    "tslint": "^5.10.0",
+    "typescript": "^2.8.3"
   }
 }

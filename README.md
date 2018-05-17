@@ -12,12 +12,14 @@
   </p>
 </div>
 
-# discotify `0.3.22`
+# discotify `0.4.0`
 Spotify Rich Presence for Discord in TypeScript<br/>
 *shows your currently playing song as a fancy rich presence in Discord*
 
 Install globally with:<br/>
-`npm install -g discotify@0.3.22`
+`npm install -g discotify` <br/>
+or <br/>
+`yarn global add discotify`
 
 ## Requirements
   - NodeJS: best to get v8 or above. Get the one for your OS [here](https://nodejs.org/en/download/package-manager)
@@ -38,9 +40,10 @@ Use `discotify --help` for a small help message
 
 ## Tested on
   - Linux Ubuntu 16.04 ✅
+  - Linux Ubuntu 18.04 ✅
   - Windows 7 ✅
   - Windows 10 ✅
-  
+
  *Got it working on an OS not listed above?<br/>Just make an issue and i'll add it.*
  <br/><br/>
  Result should look something like this:<br/>

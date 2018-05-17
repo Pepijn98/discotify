@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
 import * as logger from 'winston';
-import axios, {AxiosError, AxiosResponse} from 'axios';
+import * as request from 'request';
 import {platform} from 'os';
+import * as compareVersions from 'compare-versions';
+import {Client} from 'discord-rpc';
 
 let nodeSpotifyWebhelper: any;
 if (platform().toString() === "win32") {
@@ -12,8 +14,8 @@ if (platform().toString() === "win32") {
 }
 const spotify = new nodeSpotifyWebhelper.SpotifyWebHelper();
 
-const clientID = '383639700994523137';
-const client = require('discord-rich-presence')(clientID);
+const clientId = '383639700994523137';
+const rpc = new Client({transport: 'ipc'});
 
 let compareURI: string;
 let compare: boolean;
@@ -60,7 +62,7 @@ async function xmasAlbumCheck(albumName: string): Promise<boolean> {
 }
 
 function updateRichPresence() {
-    if (!client) return;
+    if (!rpc) return;
 
     spotify.getStatus(async (err: Error, res: any) => {
         if (err) return logger.error(err.stack ? err.stack : err.toString());
@@ -99,7 +101,7 @@ function updateRichPresence() {
                 }
             }
 
-            client.updatePresence({
+            rpc.setActivity({
                 details: `🎵 Song - ${songName}`,
                 state: `👤 Artist - ${songArtist}`,
                 startTimestamp: start,
@@ -117,7 +119,7 @@ function updateRichPresence() {
             compare = true;
             compareURI = '';
 
-            client.updatePresence({
+            rpc.setActivity({
                 details: `Paused`,
                 startTimestamp: 0,
                 endTimestamp: 0,
@@ -133,24 +135,19 @@ function updateRichPresence() {
     });
 }
 
-async function checkVersion(): Promise<void> {
-    let sVersion: string = require('../package.json').version;
-    let version = ~~(require('../package.json').version.split('.').join(''));
-    axios.get('https://raw.githubusercontent.com/KurozeroPB/discotify/cli/package.json')
-        .then((res: AxiosResponse) => {
-            if (res.status !== 200) {
-                logger.error(`Failed to check for updates: ${res.data}`);
+async function checkVersion(): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+        const version: string = require('../package.json').version;
+        request('https://raw.githubusercontent.com/KurozeroPB/discotify/cli/package.json', (e, resp, body) => {
+            if (e) return reject(e);
+            if (resp.statusCode !== 200) {
+                reject(`Failed to check for updates: ${resp.statusMessage}`);
             } else {
-                let latest = ~~(res.data.version.split('.').join(''));
-                if (latest > version) {
-                    logger.error(`A new version of Discotify is avalible\nPlease get the latest version from: https://www.npmjs.com/package/discotify\nOr run npm install -g discotify@${res.data.version}`);
-                    kill();
-                } else {
-                    logger.info(`Discotify is up-to-date using v${sVersion}`);
-                }
+                const latest: string = JSON.parse(body).version;
+                const result = compareVersions(version, latest);
+                resolve(result !== -1);
             }
-        }).catch((err: AxiosError) => {
-        logger.error(err.stack ? err.stack : err.message ? err.message : err.toString());
+        });
     });
 }
 
@@ -164,16 +161,10 @@ function kill() {
 const [, , ...args] = process.argv;
 
 if ((args[0]) && (args[0].toLowerCase() === "--start" || args[0].toLowerCase() === "-s")) {
-    (async () => {
-        try {
-            await checkVersion();
-        } catch (e) {
-            return logger.error(e);
-        }
-    })();
-    setInterval(() => {
-        updateRichPresence();
-    }, 1500);
+    rpc.login(clientId).catch((e) => {
+        logger.error(e);
+        kill();
+    });
 } else if ((args[0]) && (args[0].toLowerCase() === "--help" || args[0].toLowerCase() === "-h")) {
     console.log(`
   _____  _               _   _  __       
@@ -216,4 +207,19 @@ if ((args[0]) && (args[0].toLowerCase() === "--start" || args[0].toLowerCase() =
 
 process.on('unhandledRejection', (e: any) => logger.error(e));
 process.on('SIGINT', () => kill());
-client.on('error', (e: any) => logger.error(e));
+rpc.on('error', (e: any) => logger.error(e));
+rpc.on('ready', async () => {
+    try {
+        const isUpdated = await checkVersion();
+        if (isUpdated) {
+            const version: string = require('../package.json').version;
+            logger.info(`Discotify is up-to-date using v${version}`);
+            setInterval(() => updateRichPresence(), 1500);
+        } else {
+            logger.error(`A new version of Discotify is avalible. Please get the latest version by running npm install -g discotify@latest or yarn global add discotify`);
+            kill();
+        }
+    } catch (e) {
+        logger.error(e.stack ? e.stack : e.message ? e.message : e.toString());
+    }
+});
